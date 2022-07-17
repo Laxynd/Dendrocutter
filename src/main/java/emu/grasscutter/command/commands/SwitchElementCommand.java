@@ -56,6 +56,7 @@ public class SwitchElementCommand implements CommandHandler {
 
                 //Set skill depot
                 male.setSkillDepotData(skillDepot);
+                male.save();
 
                 //Ability change packet
                 targetPlayer.sendPacket(new PacketAvatarSkillDepotChangeNotify(male));
@@ -71,6 +72,7 @@ public class SwitchElementCommand implements CommandHandler {
 
                 //Set skill depot
                 female.setSkillDepotData(skillDepot);
+                female.save();
 
                 //Ability change packet
                 targetPlayer.sendPacket(new PacketAvatarSkillDepotChangeNotify(female));
