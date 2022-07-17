@@ -6,10 +6,14 @@ import emu.grasscutter.command.Command;
 import emu.grasscutter.command.CommandHandler;
 import emu.grasscutter.data.GameData;
 import emu.grasscutter.data.excels.AvatarData;
+import emu.grasscutter.data.excels.AvatarSkillDepotData;
 import emu.grasscutter.game.avatar.Avatar;
 import emu.grasscutter.game.entity.EntityAvatar;
 import emu.grasscutter.game.player.Player;
-import emu.grasscutter.net.proto.PropChangeReasonOuterClass;
+import emu.grasscutter.game.props.ElementType;
+import emu.grasscutter.server.packet.send.PacketAbilityChangeNotify;
+import emu.grasscutter.server.packet.send.PacketAvatarFightPropNotify;
+import emu.grasscutter.server.packet.send.PacketAvatarSkillDepotChangeNotify;
 import emu.grasscutter.server.packet.send.PacketSceneEntityAppearNotify;
 
 import java.util.ArrayList;
@@ -23,50 +27,62 @@ public class SwitchElementCommand implements CommandHandler {
             CommandHandler.sendTranslatedMessage(sender, "commands.switchElement.usage");
             return;
         }
-        if (sender == null) {
-            Grasscutter.getLogger().info("SwitchElement command couldn't be called by console.");
+        if (targetPlayer == null) {
+            Grasscutter.getLogger().info("Must target a player");
             return;
         }
 
         String element = args.get(0);
 
-        Integer elementId = switch (element.toLowerCase()) {
-            case "white" -> 501;
-            case "anemo" -> 504;
-            case "geo" -> 506;
-            case "electro" -> 507;
+        ElementType elementType = switch (element.toLowerCase()) {
+            case "white" -> ElementType.Default;
+            case "anemo" -> ElementType.Wind;
+            case "geo" -> ElementType.Rock;
+            case "electro" -> ElementType.Electric;
             default -> null;
         };
 
-        if (elementId == null) {
+        if (elementType == null) {
             CommandHandler.sendTranslatedMessage(sender, "commands.switchElement.invalidElement");
             return;
         }
 
-        List<Integer> id = new ArrayList<>();
-        id.add(GameConstants.MAIN_CHARACTER_MALE);
-        id.add(GameConstants.MAIN_CHARACTER_FEMALE);
-
-
         try {
-            for (int i : id) {
-                Avatar avatar
-                        = sender.getAvatars().getAvatarById(i);
-                if (avatar != null) {
-                    avatar.setSkillDepotData(GameData.getAvatarSkillDepotDataMap().get(elementId));
-                    avatar.setCurrentEnergy(1000);
-                    avatar.save();
-                }
+            Avatar male = targetPlayer.getAvatars().getAvatarById(GameConstants.MAIN_CHARACTER_MALE);
+            Avatar female = targetPlayer.getAvatars().getAvatarById(GameConstants.MAIN_CHARACTER_FEMALE);
+
+            if (male != null) {
+                AvatarSkillDepotData skillDepot = GameData.getAvatarSkillDepotDataMap().get(500 + elementType.getDepotValue());
+
+                //Set skill depot
+                male.setSkillDepotData(skillDepot);
+
+                //Ability change packet
+                targetPlayer.sendPacket(new PacketAvatarSkillDepotChangeNotify(male));
+
+                if (male.getAsEntity() != null)
+                    targetPlayer.sendPacket(new PacketAbilityChangeNotify(male.getAsEntity()));
+
+                targetPlayer.sendPacket(new PacketAvatarFightPropNotify(male));
+            }
+
+            if (female != null) {
+                AvatarSkillDepotData skillDepot = GameData.getAvatarSkillDepotDataMap().get(700 + elementType.getDepotValue());
+
+                //Set skill depot
+                female.setSkillDepotData(skillDepot);
+
+                //Ability change packet
+                targetPlayer.sendPacket(new PacketAvatarSkillDepotChangeNotify(female));
+
+                if (female.getAsEntity() != null)
+                    targetPlayer.sendPacket(new PacketAbilityChangeNotify(female.getAsEntity()));
+
+                targetPlayer.sendPacket(new PacketAvatarFightPropNotify(female));
             }
             CommandHandler.sendTranslatedMessage(sender, "commands.switchElement.success", element);
-            int scene = sender.getSceneId();
-            sender.getWorld().transferPlayerToScene(sender, 1, sender.getPos());
-            sender.getWorld().transferPlayerToScene(sender, scene, sender.getPos());
-            sender.getScene().broadcastPacket(new PacketSceneEntityAppearNotify(sender));
-        } catch (Exception ignored) {
-            ignored.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-
     }
 }
