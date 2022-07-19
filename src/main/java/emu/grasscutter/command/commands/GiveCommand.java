@@ -1,6 +1,5 @@
 package emu.grasscutter.command.commands;
 
-import emu.grasscutter.GameConstants;
 import emu.grasscutter.command.Command;
 import emu.grasscutter.command.CommandHandler;
 import emu.grasscutter.data.GameData;
@@ -16,10 +15,8 @@ import emu.grasscutter.game.player.Player;
 import emu.grasscutter.game.props.ActionReason;
 import emu.grasscutter.game.props.FightProperty;
 import emu.grasscutter.utils.SparseSet;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -253,14 +250,6 @@ public final class GiveCommand implements CommandHandler {
             avatar.getTalentIdList().add(talentBase + i);
         }
 
-        // Main character needs skill depot manually added.
-        if (avatar.getAvatarId() == GameConstants.MAIN_CHARACTER_MALE) {
-            avatar.setSkillDepotData(GameData.getAvatarSkillDepotDataMap().get(504));
-        }
-        else if(avatar.getAvatarId() == GameConstants.MAIN_CHARACTER_FEMALE) {
-            avatar.setSkillDepotData(GameData.getAvatarSkillDepotDataMap().get(704));
-        }
-
         avatar.recalcStats();
 
         return avatar;
@@ -476,11 +465,11 @@ public final class GiveCommand implements CommandHandler {
         10000-10008, 11411, 11506-11508, 12505, 12506, 12508, 12509,
         13503, 13506, 14411, 14503, 14505, 14508, 15504-15506
         """);
-    
+
     private static final SparseSet illegalRelicIds = new SparseSet("""
         20001, 23300-23340, 23383-23385, 78310-78554, 99310-99554
         """);
-    
+
     private static final SparseSet illegalItemIds = new SparseSet("""
         100086, 100087, 100100-101000, 101106-101110, 101306, 101500-104000,
         105001, 105004, 106000-107000, 107011, 108000, 109000-110000,

@@ -1,51 +1,37 @@
 package emu.grasscutter.server.packet.recv;
 
-import emu.grasscutter.GameConstants;
 import emu.grasscutter.Grasscutter;
 import emu.grasscutter.command.commands.SendMailCommand.MailBuilder;
 import emu.grasscutter.data.GameData;
-import emu.grasscutter.database.DatabaseHelper;
 import emu.grasscutter.game.avatar.Avatar;
 import emu.grasscutter.game.mail.Mail;
 import emu.grasscutter.game.player.Player;
 import emu.grasscutter.net.packet.BasePacket;
 import emu.grasscutter.net.packet.Opcodes;
+import emu.grasscutter.net.packet.PacketHandler;
 import emu.grasscutter.net.packet.PacketOpcodes;
 import emu.grasscutter.net.proto.SetPlayerBornDataReqOuterClass.SetPlayerBornDataReq;
-import emu.grasscutter.net.packet.PacketHandler;
-import emu.grasscutter.server.event.game.PlayerCreationEvent;
 import emu.grasscutter.server.game.GameSession;
-import emu.grasscutter.server.game.GameSession.SessionState;
-
 import java.util.Arrays;
-
-import static emu.grasscutter.Configuration.*;
+import static emu.grasscutter.Configuration.GAME_INFO;
 
 @Opcodes(PacketOpcodes.SetPlayerBornDataReq)
 public class HandlerSetPlayerBornDataReq extends PacketHandler {
-	
+
 	@Override
 	public void handle(GameSession session, byte[] header, byte[] payload) throws Exception {
 		SetPlayerBornDataReq req = SetPlayerBornDataReq.parseFrom(payload);
-		
+
 		// Sanity checks
 		int avatarId = req.getAvatarId();
-		int startingSkillDepot;
-		if (avatarId == GameConstants.MAIN_CHARACTER_MALE) {
-			startingSkillDepot = 504;
-		} else if (avatarId == GameConstants.MAIN_CHARACTER_FEMALE) {
-			startingSkillDepot = 704;
-		} else {
-			return;
-		}
-		
+
 		// Make sure resources folder is set
 		if (!GameData.getAvatarDataMap().containsKey(avatarId)) {
 			Grasscutter.getLogger().error("No avatar data found! Please check your ExcelBinOutput folder.");
 			session.close();
 			return;
 		}
-		
+
 		// Get player object
 		Player player = session.getPlayer();
 		player.setNickname(req.getNickName());
@@ -53,7 +39,6 @@ public class HandlerSetPlayerBornDataReq extends PacketHandler {
 		// Create avatar
 		if (player.getAvatars().getAvatarCount() == 0) {
 			Avatar mainCharacter = new Avatar(avatarId);
-			mainCharacter.setSkillDepotData(GameData.getAvatarSkillDepotDataMap().get(startingSkillDepot));
 			// Manually handle adding to team
 			player.addAvatar(mainCharacter, false);
 			player.setMainCharacterId(avatarId);
@@ -63,10 +48,10 @@ public class HandlerSetPlayerBornDataReq extends PacketHandler {
 		} else {
 			return;
 		}
-		
+
 		// Login done
 		session.getPlayer().onLogin();
-		
+
 		// Born resp packet
 		session.send(new BasePacket(PacketOpcodes.SetPlayerBornDataRsp));
 
