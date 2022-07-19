@@ -1,11 +1,14 @@
 package emu.grasscutter.game.managers.mapmark;
 
+import emu.grasscutter.Configuration;
+import emu.grasscutter.Grasscutter;
 import emu.grasscutter.game.player.Player;
 import emu.grasscutter.net.proto.MapMarkPointTypeOuterClass.MapMarkPointType;
 import emu.grasscutter.net.proto.MarkMapReqOuterClass.MarkMapReq;
 import emu.grasscutter.net.proto.MarkMapReqOuterClass.MarkMapReq.Operation;
 import emu.grasscutter.server.packet.send.PacketMarkMapRsp;
 import emu.grasscutter.server.packet.send.PacketSceneEntityAppearNotify;
+import emu.grasscutter.utils.ConfigContainer;
 import emu.grasscutter.utils.Position;
 
 import java.util.HashMap;
@@ -27,7 +30,7 @@ public class MapMarksManager {
             case OPERATION_ADD -> {
                 MapMark createMark = new MapMark(req.getMark());
                 // keep teleporting functionality on fishhook mark.
-                if (createMark.getMapMarkPointType() == MapMarkPointType.MAP_MARK_POINT_TYPE_FISH_POOL) {
+                if (createMark.getMapMarkPointType() == MapMarkPointType.MAP_MARK_POINT_TYPE_FISH_POOL && Grasscutter.config.server.game.gameOptions.markerTeleport) {
                     teleport(player, createMark);
                     return;
                 }

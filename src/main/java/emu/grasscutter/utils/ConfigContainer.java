@@ -18,7 +18,7 @@ import static emu.grasscutter.Grasscutter.config;
  */
 public class ConfigContainer {
     private static int version() {
-        return 3;
+        return 1001;
     }
 
     /**
@@ -180,10 +180,12 @@ public class ConfigContainer {
         public AvatarLimits avatarLimits = new AvatarLimits();
         public int sceneEntityLimit = 1000; // Unenforced. TODO: Implement.
 
+        public boolean markerTeleport = false;
+
         public boolean watchGachaConfig = false;
         public boolean enableShopItems = true;
         public boolean staminaUsage = true;
-        public boolean energyUsage = false;
+        public boolean energyUsage = true;
         public ResinOptions resinOptions = new ResinOptions();
         public Rates rates = new Rates();
 
@@ -207,7 +209,7 @@ public class ConfigContainer {
         }
 
         public static class ResinOptions {
-            public boolean resinUsage = false;
+            public boolean resinUsage = true;
             public int cap = 160;
             public int rechargeTime = 480;
         }
